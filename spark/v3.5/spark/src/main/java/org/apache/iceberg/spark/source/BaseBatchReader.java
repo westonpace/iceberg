@@ -31,12 +31,14 @@ import org.apache.iceberg.io.datafile.DataFileServiceRegistry;
 import org.apache.iceberg.io.datafile.ReadBuilder;
 import org.apache.iceberg.spark.OrcBatchReadConf;
 import org.apache.iceberg.spark.ParquetBatchReadConf;
+import org.apache.iceberg.spark.LanceBatchReadConf;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.vectorized.ColumnarBatch;
 
 abstract class BaseBatchReader<T extends ScanTask> extends BaseReader<ColumnarBatch, T> {
   private final ParquetBatchReadConf parquetConf;
   private final OrcBatchReadConf orcConf;
+  private final LanceBatchReadConf lanceConf;
 
   BaseBatchReader(
       Table table,
@@ -45,10 +47,12 @@ abstract class BaseBatchReader<T extends ScanTask> extends BaseReader<ColumnarBa
       Schema expectedSchema,
       boolean caseSensitive,
       ParquetBatchReadConf parquetConf,
-      OrcBatchReadConf orcConf) {
+      OrcBatchReadConf orcConf,
+      LanceBatchReadConf lanceConf) {
     super(table, taskGroup, tableSchema, expectedSchema, caseSensitive);
     this.parquetConf = parquetConf;
     this.orcConf = orcConf;
+    this.lanceConf = lanceConf;
   }
 
   protected CloseableIterable<ColumnarBatch> newBatchIterable(
@@ -83,6 +87,8 @@ abstract class BaseBatchReader<T extends ScanTask> extends BaseReader<ColumnarBa
       readBuilder = readBuilder.recordsPerBatch(parquetConf.batchSize());
     } else if (orcConf != null) {
       readBuilder = readBuilder.recordsPerBatch(orcConf.batchSize());
+    } else if (lanceConf != null) {
+      readBuilder = readBuilder.recordsPerBatch(lanceConf.batchSize());
     }
 
     return readBuilder.build();

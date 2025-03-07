@@ -17,7 +17,9 @@
  * under the License.
  */
 
+
 import groovy.transform.Memoized
+
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -594,7 +596,6 @@ project(':iceberg-delta-lake') {
       integrationImplementation project(path: ':iceberg-hive-metastore', configuration: 'testArtifacts')
       integrationImplementation("org.apache.spark:spark-hive_${scalaVersion}:${libs.versions.spark.hive35.get()}") {
         exclude group: 'org.apache.avro', module: 'avro'
-        exclude group: 'org.apache.arrow'
         exclude group: 'org.apache.parquet'
         // to make sure netty libs only come from project(':iceberg-arrow')
         exclude group: 'io.netty', module: 'netty-buffer'
@@ -794,6 +795,32 @@ project(':iceberg-parquet') {
 
     testImplementation project(path: ':iceberg-api', configuration: 'testArtifacts')
     testImplementation project(path: ':iceberg-core', configuration: 'testArtifacts')
+    testImplementation project(path: ':iceberg-data')
+  }
+}
+
+project(':iceberg-lance') {
+  test {
+    useJUnitPlatform()
+  }
+  dependencies {
+    api project(':iceberg-api')
+    implementation project(':iceberg-arrow')
+    implementation project(':iceberg-core')
+    implementation project(':iceberg-common')
+    implementation project(':iceberg-parquet')
+    implementation(libs.lance.core)
+    implementation(libs.arrow.vector) {
+      exclude group: 'io.netty', module: 'netty-buffer'
+      exclude group: 'io.netty', module: 'netty-common'
+      exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    }
+    implementation(libs.parquet.avro) {
+      exclude group: 'org.apache.avro', module: 'avro'
+      // already shaded by Parquet
+      exclude group: 'it.unimi.dsi'
+      exclude group: 'org.codehaus.jackson'
+    }
   }
 }
 

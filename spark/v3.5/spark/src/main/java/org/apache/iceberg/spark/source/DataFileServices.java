@@ -20,6 +20,7 @@ package org.apache.iceberg.spark.source;
 
 import static org.apache.iceberg.MetadataColumns.DELETE_FILE_ROW_FIELD_NAME;
 
+import com.lancedb.iceberg.Lance;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.avro.Avro;
 import org.apache.iceberg.io.datafile.DataFileServiceRegistry;
@@ -27,12 +28,7 @@ import org.apache.iceberg.io.datafile.DeleteFilter;
 import org.apache.iceberg.orc.ORC;
 import org.apache.iceberg.parquet.Parquet;
 import org.apache.iceberg.spark.ParquetReaderType;
-import org.apache.iceberg.spark.data.SparkAvroWriter;
-import org.apache.iceberg.spark.data.SparkOrcReader;
-import org.apache.iceberg.spark.data.SparkOrcWriter;
-import org.apache.iceberg.spark.data.SparkParquetReaders;
-import org.apache.iceberg.spark.data.SparkParquetWriters;
-import org.apache.iceberg.spark.data.SparkPlannedAvroReader;
+import org.apache.iceberg.spark.data.*;
 import org.apache.iceberg.spark.data.vectorized.VectorizedSparkOrcReaders;
 import org.apache.iceberg.spark.data.vectorized.VectorizedSparkParquetReaders;
 import org.apache.spark.sql.catalyst.InternalRow;
@@ -73,6 +69,8 @@ public class DataFileServices {
                             idToConstant,
                             (DeleteFilter<InternalRow>) deleteFilter)));
 
+    DataFileServiceRegistry.registerReader(FileFormat.LANCE, ColumnarBatch.class.getName(), inputFile -> Lance.read(inputFile).allocator(SparkLanceWriter.rootAllocator).arrowToSpark(SparkLanceReader::arrowToSparkBatch));
+
     DataFileServiceRegistry.registerReader(
         FileFormat.PARQUET,
         ColumnarBatch.class.getName(),
@@ -107,6 +105,8 @@ public class DataFileServices {
                                 ((StructType) engineSchema)
                                     .apply(DELETE_FILE_ROW_FIELD_NAME)
                                     .dataType())));
+
+    DataFileServiceRegistry.registerAppender(FileFormat.LANCE, InternalRow.class.getName(), outputFile -> Lance.write(outputFile).schemaToArrow(SparkLanceWriter::schemaToArrow).valuesToArrow(SparkLanceWriter::valuesToArrow).valueToArrow(SparkLanceWriter::valueToArrow).allocator(SparkLanceWriter.rootAllocator));
 
     DataFileServiceRegistry.registerAppender(
         FileFormat.PARQUET,

@@ -80,9 +80,11 @@ slf4j = "2.0.16"
 snowflake-jdbc = "3.22.0"
 spark-hive34 = "3.4.4"
 spark-hive35 = "3.5.4"
+spark-sql35 = "3.5.4"
 sqlite-jdbc = "3.49.1.0"
 testcontainers = "1.20.5"
 tez08 = { strictly = "0.8.4"}  # see rich version usage explanation above
+lance = "0.25.3"
 
 [libraries]
 activation = { module = "javax.activation:activation", version.ref = "activation" }
@@ -162,7 +164,9 @@ roaringbitmap = { module = "org.roaringbitmap:RoaringBitmap", version.ref = "roa
 scala-collection-compat = { module = "org.scala-lang.modules:scala-collection-compat_2.13", version.ref = "scala-collection-compat"}
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+sparksql35 = { module = "org.apache.spark:spark-sql_2.12", version.ref= "spark-sql35" }
 snowflake-jdbc = { module = "net.snowflake:snowflake-jdbc", version.ref = "snowflake-jdbc" }
+lance-core = { module = "com.lancedb:lance-core", version.ref = "lance" }
 
 # test libraries
 apiguardian = { module = "org.apiguardian:apiguardian-api", version.ref = "apiguardian" }
